@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Hound</string>
+    <string name="add_tracking">Add Tracking</string>
+    <string name="stop_tracking">Stop Tracking</string>
+    <string name="pin_hint">Pin</string>
+    <string name="name_hint">Friend\'s name</string>
+    <string name="generate_pin">Generate Pin</string>
+    <string name="tracking_time_message">Select duration \(in minutes\) you want the pin to be valid </string>
+</resources>
