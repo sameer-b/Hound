@@ -1,11 +1,7 @@
 <resources>
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
-  <!--      <item name="android:actionBarStyle">@style/MyActionBar</item>
-        &lt;!&ndash; Support library compatibility &ndash;&gt;
-        <item name="actionBarStyle">@style/MyActionBar</item>-->
-        <item name="colorPrimary">@color/blue</item>
-        <item name="colorPrimaryDark">@color/darkBlue</item>
+        <item name="colorPrimary">@color/ColorPrimary</item>
+        <item name="colorPrimaryDark">@color/ColorPrimaryDark</item>
     </style>
-
 </resources>
