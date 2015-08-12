@@ -314,7 +314,7 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
         sendIntent.setAction(Intent.ACTION_SEND);
         sendIntent.putExtra(Intent.EXTRA_TEXT, shareText);
         sendIntent.setType("text/plain");
-        startActivity(sendIntent);
+        startActivity(Intent.createChooser(sendIntent, "Share Pin"));
     }
 
     public void copyPinToClipboard(View v) {
