@@ -2,14 +2,20 @@ package com.example.sameer.hound;
 
 import com.loopj.android.http.*;
 
+
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Intent;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AlertDialog;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.text.InputType;
 import android.content.DialogInterface;
@@ -195,7 +201,7 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
         Toast.makeText(getApplicationContext(), "Stopped tracking!", Toast.LENGTH_LONG).show();
     }
 
-    public void openGeneratePinDialog(MenuItem menu) {
+    public void openGeneratePinDialog(View menu) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Generate pin");
 
@@ -233,6 +239,20 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
                             System.out.println("Updated! " + str);
                             JSONObject obj = new JSONObject(str);
                             my_pin = obj.getInt("pin");
+                            TextView pin_view =(TextView) findViewById(R.id.textView3);
+                            pin_view.setText(" " + my_pin);
+                            System.out.println(pin_view.getText());
+                            pin_view.setText(" " + my_pin);
+                            Button generate_pin_button = (Button) findViewById(R.id.generate_pin_button);
+                            generate_pin_button.setVisibility(View.INVISIBLE);
+                            Button share_pin_button = (Button) findViewById(R.id.share_pin_button);
+                            Button copyToClipboardButton = (Button) findViewById(R.id.copyToClipboardButton);
+                            Button destroyPinButton = (Button) findViewById(R.id.destroyPin);
+
+                            share_pin_button.setVisibility(View.VISIBLE);
+                            copyToClipboardButton.setVisibility(View.VISIBLE);
+                            destroyPinButton.setVisibility(View.VISIBLE);
+
                             Toast.makeText(getApplicationContext(), "Your Pin: " + my_pin, Toast.LENGTH_LONG).show();
                             startSharingLocation();
                         } catch (Exception e) {
@@ -283,8 +303,38 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
             stopSharingLocation();
             menu.setIcon(R.drawable.ic_gps_fixed_white_24dp);
         } else {
-            openGeneratePinDialog(menu);
+        //    openGeneratePinDialog(menu);
             menu.setIcon(R.drawable.ic_location_disabled_white_24dp);
         }
+    }
+
+    public void sharePin(View v) {
+        String shareText = "My Hound Pin is: "+my_pin;
+        Intent sendIntent = new Intent();
+        sendIntent.setAction(Intent.ACTION_SEND);
+        sendIntent.putExtra(Intent.EXTRA_TEXT, shareText);
+        sendIntent.setType("text/plain");
+        startActivity(sendIntent);
+    }
+
+    public void copyPinToClipboard(View v) {
+        String shareText = "My Hound Pin is: "+my_pin;
+        ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText("Hound Pin", shareText);
+        clipboard.setPrimaryClip(clip);
+        Toast.makeText(this,"Pin copied to clipboard!",Toast.LENGTH_SHORT).show();
+    }
+
+    public void destroyPin(View v) {
+        stopSharingLocation();
+        my_pin = 0;
+        Button generatePinButton = (Button) findViewById(R.id.generate_pin_button);
+        Button sharePinButton = (Button) findViewById(R.id.share_pin_button);
+        Button copyToClipboard = (Button) findViewById(R.id.copyToClipboardButton);;
+        generatePinButton.setVisibility(View.VISIBLE);
+        sharePinButton.setVisibility(View.INVISIBLE);
+        copyToClipboard.setVisibility(View.INVISIBLE);
+
+        v.setVisibility(View.INVISIBLE);
     }
 }

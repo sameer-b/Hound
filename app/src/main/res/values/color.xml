@@ -3,4 +3,7 @@
     <color name="ColorPrimaryDark">#1A237E</color>
     <color name="tabsScrollColor">#EEEEEE</color>
     <color name="tabsTextColor">#EEEEEE</color>
+    <color name="RedColorPrimary">#F44336</color>
+    <color name="RedColorPrimaryDark">#C62828</color>
+    <color name="white">#EEEEEE</color>
 </resources>

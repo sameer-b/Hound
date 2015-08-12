@@ -4,13 +4,82 @@ android:layout_width="match_parent"
 android:layout_height="match_parent">
 
 
-<TextView
-    android:id="@+id/textView"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_centerHorizontal="true"
-    android:layout_centerVertical="true"
-    android:text="You Are In Tab 2"
-    android:textAppearance="?android:attr/textAppearanceMedium" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Your Pin:"
+        android:id="@+id/textView2"
+        android:textSize="@dimen/abc_text_size_medium_material"
+        android:textAppearance="@android:style/TextAppearance"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="29dp"
+        android:layout_marginTop="50dp"
+        android:onClick="openGeneratePinDialog" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView3"
+        android:textSize="@dimen/abc_text_size_medium_material"
+        android:text="No pin generated :("
+        android:textAppearance="@android:style/TextAppearance"
+        android:layout_marginRight="45dp"
+        android:textStyle="italic"
+        android:layout_alignTop="@+id/textView2"
+        android:layout_toEndOf="@+id/textView2"
+        android:layout_marginLeft="5dp"
+        android:onClick="openGeneratePinDialog" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Generate Pin"
+        android:onClick="openGeneratePinDialog"
+        android:textColor="@color/white"
+        android:id="@+id/generate_pin_button"
+        android:background="@drawable/bg_button"
+        android:visibility="visible"
+        android:layout_below="@+id/textView2"
+        android:layout_alignStart="@+id/textView2"
+        android:layout_marginTop="10dp"
+        android:layout_alignEnd="@+id/textView3" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Share"
+        android:onClick="sharePin"
+        android:id="@+id/share_pin_button"
+        android:visibility="invisible"
+        android:layout_above="@+id/destroyPin"
+        android:layout_alignStart="@+id/generate_pin_button"
+        android:layout_marginRight="10dp" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Copy to clipboard"
+        android:onClick="copyPinToClipboard"
+        android:id="@+id/copyToClipboardButton"
+        android:visibility="invisible"
+        android:layout_above="@+id/destroyPin"
+        android:layout_alignEnd="@+id/generate_pin_button"
+        android:layout_toEndOf="@+id/share_pin_button" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Destroy Pin"
+        android:background="@drawable/red_bg_button"
+        android:id="@+id/destroyPin"
+        android:onClick="destroyPin"
+        android:textColor="@color/white"
+        android:visibility="invisible"
+        android:elevation="10dp"
+        android:layout_marginTop="28dp"
+        android:layout_below="@+id/generate_pin_button"
+        android:layout_alignStart="@+id/generate_pin_button"
+        android:layout_alignEnd="@+id/generate_pin_button" />
 
 </RelativeLayout>
