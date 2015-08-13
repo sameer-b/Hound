@@ -6,6 +6,7 @@ import com.loopj.android.http.*;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Intent;
+import android.os.CountDownTimer;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AlertDialog;
@@ -45,11 +46,13 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
     String friendName = null;
     Boolean stop_tracking = false;
     Boolean locationSharingStarted = false;
-    int my_pin = 0;
+
     Boolean firstRenderOnMap = true;
     private Toolbar toolbar;
     ViewPager pager;
     ViewPagerAdapter adapter;
+    int countDown = 0;
+    int my_pin = 0;
     SlidingTabLayout tabs;
     CharSequence Titles[] = {"Friends", "You"};
     int Numboftabs = 2;
@@ -226,7 +229,8 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 AsyncHttpClient client = new AsyncHttpClient();
-                client.get(MainActivity.baseURL + "/getPin/10" + tracking_pin, new AsyncHttpResponseHandler() {
+                int expiration = input_time.getValue();
+                client.get(MainActivity.baseURL + "/getPin/" + expiration, new AsyncHttpResponseHandler() {
                     @Override
                     public void onStart() {
                         // called before request is started
@@ -235,27 +239,15 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
                     @Override
                     public void onSuccess(int statusCode, Header[] headers, byte[] response) {
                         try {
-                            String str = new String(response, "UTF-8");
-                            System.out.println("Updated! " + str);
-                            JSONObject obj = new JSONObject(str);
+                            JSONObject obj = new JSONObject(new String(response, "UTF-8"));
                             my_pin = obj.getInt("pin");
-                            TextView pin_view =(TextView) findViewById(R.id.textView3);
-                            pin_view.setText(" " + my_pin);
-                            System.out.println(pin_view.getText());
-                            pin_view.setText(" " + my_pin);
-                            Button generate_pin_button = (Button) findViewById(R.id.generate_pin_button);
-                            generate_pin_button.setVisibility(View.INVISIBLE);
-                            Button share_pin_button = (Button) findViewById(R.id.share_pin_button);
-                            Button copyToClipboardButton = (Button) findViewById(R.id.copyToClipboardButton);
-                            Button destroyPinButton = (Button) findViewById(R.id.destroyPin);
-
-                            share_pin_button.setVisibility(View.VISIBLE);
-                            copyToClipboardButton.setVisibility(View.VISIBLE);
-                            destroyPinButton.setVisibility(View.VISIBLE);
-
-                            Toast.makeText(getApplicationContext(), "Your Pin: " + my_pin, Toast.LENGTH_LONG).show();
+                            countDown = obj.getInt("countDown");
+                            System.out.println("Count down is " + countDown);
                             startSharingLocation();
-                        } catch (Exception e) {
+                        } catch (UnsupportedEncodingException e) {
+                        }
+                        catch (JSONException e) {
+
                         }
                     }
 
@@ -282,6 +274,21 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
     }
 
     public void startSharingLocation() {
+        TextView pin_view =(TextView) findViewById(R.id.textView3);
+        Button generate_pin_button = (Button) findViewById(R.id.generate_pin_button);
+        TextView countDownTimer = (TextView) findViewById(R.id.countDownTimer);
+        Button copyToClipboardButton = (Button) findViewById(R.id.copyToClipboardButton);
+        Button share_pin_button = (Button) findViewById(R.id.share_pin_button);
+        Button destroyPinButton = (Button) findViewById(R.id.destroyPin);
+
+        generate_pin_button.setVisibility(View.INVISIBLE);
+        countDownTimer.setVisibility(View.VISIBLE);
+        share_pin_button.setVisibility(View.VISIBLE);
+        copyToClipboardButton.setVisibility(View.VISIBLE);
+        destroyPinButton.setVisibility(View.VISIBLE);
+        pin_view.setText(" " + my_pin);
+        showTimer(countDown);
+        Toast.makeText(getApplicationContext(), "Your Pin: " + my_pin, Toast.LENGTH_LONG).show();
         locationSharingStarted = true;
         Intent intent = new Intent(this, LocationSharingService.class);
         intent.putExtra("pin", my_pin + "");
@@ -290,22 +297,24 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
     }
 
     public void stopSharingLocation() {
+        Button generatePinButton = (Button) findViewById(R.id.generate_pin_button);
+        Button sharePinButton = (Button) findViewById(R.id.share_pin_button);
+        Button copyToClipboard = (Button) findViewById(R.id.copyToClipboardButton);
+        Button destroyPin = (Button) findViewById(R.id.destroyPin);
+        TextView countDownTimer = (TextView) findViewById(R.id.countDownTimer);
+        TextView showPin = (TextView) findViewById(R.id.textView3);
+
+        showPin.setText("No pin generated :(");
+        countDownTimer.setVisibility(View.INVISIBLE);
+        generatePinButton.setVisibility(View.VISIBLE);
+        sharePinButton.setVisibility(View.INVISIBLE);
+        copyToClipboard.setVisibility(View.INVISIBLE);
+        destroyPin.setVisibility(View.INVISIBLE);
+
         locationSharingStarted = false;
         Intent intent = new Intent(this, LocationSharingService.class);
         stopService(intent);
         Toast.makeText(getApplicationContext(), "Location sharing stopped!", Toast.LENGTH_LONG).show();
-
-
-    }
-
-    public void toggleLocationSharing(MenuItem menu) {
-        if (locationSharingStarted) {
-            stopSharingLocation();
-            menu.setIcon(R.drawable.ic_gps_fixed_white_24dp);
-        } else {
-        //    openGeneratePinDialog(menu);
-            menu.setIcon(R.drawable.ic_location_disabled_white_24dp);
-        }
     }
 
     public void sharePin(View v) {
@@ -328,13 +337,30 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
     public void destroyPin(View v) {
         stopSharingLocation();
         my_pin = 0;
-        Button generatePinButton = (Button) findViewById(R.id.generate_pin_button);
-        Button sharePinButton = (Button) findViewById(R.id.share_pin_button);
-        Button copyToClipboard = (Button) findViewById(R.id.copyToClipboardButton);;
-        generatePinButton.setVisibility(View.VISIBLE);
-        sharePinButton.setVisibility(View.INVISIBLE);
-        copyToClipboard.setVisibility(View.INVISIBLE);
+    }
 
-        v.setVisibility(View.INVISIBLE);
+    public void showTimer(int countDown) {
+        new CountDownTimer(countDown, 1000) {
+            TextView countDownTimer = (TextView) findViewById(R.id.countDownTimer);
+            public void onTick(long millisUntilFinished) {
+                long hours = millisUntilFinished / (60*60*1000);
+                long minutes = (millisUntilFinished % (60*60*1000)) / (60*1000);
+                long seconds = (millisUntilFinished % (60*1000) / 1000);
+                StringBuilder time = new StringBuilder();
+                if(hours > 0) {
+                    time.append(hours+":");
+                }
+                time.append(minutes+":");
+                time.append(seconds+" sec");
+                countDownTimer.setText("Pin expires in: " + time);
+
+                if(locationSharingStarted == false) {
+                    cancel();
+                }
+            }
+            public void onFinish() {
+                countDownTimer.setText("Pin expired!");
+            }
+        }.start();
     }
 }
