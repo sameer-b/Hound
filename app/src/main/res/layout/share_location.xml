@@ -83,15 +83,16 @@ android:layout_height="match_parent">
         android:layout_alignEnd="@+id/generate_pin_button" />
 
     <TextView
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/countDownTimer"
         android:textStyle="bold"
         android:textSize="@dimen/abc_text_size_headline_material"
+        android:paddingTop="230dp"
         android:visibility="invisible"
-        android:layout_centerVertical="true"
-        android:layout_alignEnd="@+id/copyToClipboardButton"
-        android:layout_alignStart="@+id/destroyPin"
-        android:layout_marginTop="250dp" />
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:layout_alignEnd="@+id/destroyPin"
+        android:layout_alignStart="@+id/destroyPin" />
 
 </RelativeLayout>

@@ -46,7 +46,7 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
     String friendName = null;
     Boolean stop_tracking = false;
     Boolean locationSharingStarted = false;
-
+    CountDownTimer timer;
     Boolean firstRenderOnMap = true;
     private Toolbar toolbar;
     ViewPager pager;
@@ -164,22 +164,26 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
                     JSONArray friend_locations = new JSONArray(str);
                     System.out.println("Updated! " + str);
                     JSONObject obj = friend_locations.getJSONObject(0);
-                    System.out.println("Debug " + obj.toString());
-                    double latitude = obj.getDouble("latitude");
-                    double longitude = obj.getDouble("longitude");
+                    if (obj.has("error")) {
+                        showInvalidPinDialog();
+                    } else {
+                        double latitude = obj.getDouble("latitude");
+                        double longitude = obj.getDouble("longitude");
 
-                    GoogleMap map = ((map) adapter.getRegisteredFragment(0)).map;
+                        GoogleMap map = ((map) adapter.getRegisteredFragment(0)).map;
 
-                    LatLng friend_location = new LatLng(latitude, longitude);
-                    map.addMarker(new MarkerOptions().position(friend_location).title(friendName));
-                    if (firstRenderOnMap) {
-                        map.moveCamera(CameraUpdateFactory.newLatLng(friend_location));
-                        map.animateCamera(CameraUpdateFactory.zoomTo(17.0f));
-                        firstRenderOnMap = false;
+                        LatLng friend_location = new LatLng(latitude, longitude);
+                        map.addMarker(new MarkerOptions().position(friend_location).title(friendName));
+                        if (firstRenderOnMap) {
+                            map.moveCamera(CameraUpdateFactory.newLatLng(friend_location));
+                            map.animateCamera(CameraUpdateFactory.zoomTo(17.0f));
+                            firstRenderOnMap = false;
+                        }
+                        if (latitude != 0 && longitude != 0 && stop_tracking == false) {
+                            showLocation();
+                        }
                     }
-                    if (latitude != 0 && longitude != 0 && stop_tracking == false) {
-                        showLocation();
-                    }
+
                 } catch (JSONException jsonExcep) {
                     System.out.println(jsonExcep);
                 } catch (UnsupportedEncodingException unsuppEncodingExcep) {
@@ -297,6 +301,7 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
     }
 
     public void stopSharingLocation() {
+        cancelTimer();
         Button generatePinButton = (Button) findViewById(R.id.generate_pin_button);
         Button sharePinButton = (Button) findViewById(R.id.share_pin_button);
         Button copyToClipboard = (Button) findViewById(R.id.copyToClipboardButton);
@@ -336,31 +341,65 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
 
     public void destroyPin(View v) {
         stopSharingLocation();
-        my_pin = 0;
+        sendPinExpiryMessage();
     }
 
     public void showTimer(int countDown) {
-        new CountDownTimer(countDown, 1000) {
+        timer = new CountDownTimer(countDown, 1000) {
             TextView countDownTimer = (TextView) findViewById(R.id.countDownTimer);
             public void onTick(long millisUntilFinished) {
-                long hours = millisUntilFinished / (60*60*1000);
-                long minutes = (millisUntilFinished % (60*60*1000)) / (60*1000);
-                long seconds = (millisUntilFinished % (60*1000) / 1000);
-                StringBuilder time = new StringBuilder();
-                if(hours > 0) {
-                    time.append(hours+":");
-                }
-                time.append(minutes+":");
-                time.append(seconds+" sec");
-                countDownTimer.setText("Pin expires in: " + time);
-
                 if(locationSharingStarted == false) {
-                    cancel();
+                    cancelTimer();
+                    countDownTimer.setText("");
+                    return;
+                }else {
+                    long hours = millisUntilFinished / (60*60*1000);
+                    long minutes = (millisUntilFinished % (60*60*1000)) / (60*1000);
+                    long seconds = (millisUntilFinished % (60*1000) / 1000);
+                    StringBuilder time = new StringBuilder();
+                    if(hours > 0) {
+                        time.append(hours+":");
+                    }
+                    time.append(minutes+":");
+                    time.append(seconds+" sec");
+                    countDownTimer.setText("Pin expires in: " + time);
                 }
             }
             public void onFinish() {
                 countDownTimer.setText("Pin expired!");
             }
         }.start();
+    }
+
+    public void cancelTimer() {
+        timer.cancel();
+    }
+
+    public void showInvalidPinDialog() {
+        Toast.makeText(this,"Pin you entered is invalid or expired",Toast.LENGTH_SHORT).show();
+    }
+
+    public void sendPinExpiryMessage() {
+        AsyncHttpClient client = new AsyncHttpClient();
+        client.get(MainActivity.baseURL + "/destroyPin/" + my_pin, new AsyncHttpResponseHandler() {
+            @Override
+            public void onStart() {
+            }
+
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] response) {
+                my_pin = 0;
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] errorResponse, Throwable e) {
+
+            }
+
+            @Override
+            public void onRetry(int retryNo) {
+
+            }
+        });
     }
 }
