@@ -25,4 +25,5 @@ dependencies {
     compile files('libs/android-async-http-1.4.8.jar')
     compile 'com.android.support:appcompat-v7:22.2.1'
     compile 'com.github.navasmdc:MaterialDesign:1.5@aar'
+    compile 'com.androidmapsextensions:android-maps-extensions:2.2.0'
 }

@@ -1,7 +1,7 @@
 package com.example.sameer.hound;
 
-import com.google.android.gms.maps.model.Marker;
 import com.loopj.android.http.*;
+
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Intent;
@@ -18,39 +18,47 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.text.InputType;
 import android.content.DialogInterface;
+
 import org.apache.http.Header;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import java.io.UnsupportedEncodingException;
 
+import java.io.UnsupportedEncodingException;
 
 public class MainActivity extends ActionBarActivity implements OnMapReadyCallback {
     final static String baseURL = "https://hound-trackerweb.rhcloud.com";
+
+    int my_pin = 0;
     int tracking_pin = 0;
+    int countDown = 0;
     String friendName = null;
+
     Boolean stop_tracking = false;
     Boolean locationSharingStarted = false;
-    CountDownTimer timer;
     Boolean firstRenderOnMap = true;
+    int Numboftabs = 2;
+
+    CountDownTimer timer;
     private Toolbar toolbar;
     ViewPager pager;
     ViewPagerAdapter adapter;
-    int countDown = 0;
-    int my_pin = 0;
     SlidingTabLayout tabs;
     CharSequence Titles[] = {"Friends", "You"};
-    int Numboftabs = 2;
     MarkerOptions friend_marker = new MarkerOptions();
+    AsyncHttpClient client = new AsyncHttpClient();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -144,8 +152,8 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
     }
 
     public void showLocation() {
-        AsyncHttpClient client = new AsyncHttpClient();
         client.get(MainActivity.baseURL + "/getLocation/" + tracking_pin, new AsyncHttpResponseHandler() {
+
             @Override
             public void onStart() {
             }
@@ -162,29 +170,12 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
                     } else {
                         double latitude = obj.getDouble("latitude");
                         double longitude = obj.getDouble("longitude");
+                        addMapMarker(latitude, longitude);
 
-                        GoogleMap map = ((map) adapter.getRegisteredFragment(0)).map;
-
-                        LatLng friend_location = new LatLng(latitude, longitude);
-                        map.clear();
-                        map.setMyLocationEnabled(true);
-
-                        friend_marker.position(friend_location);
-                        friend_marker.title(friendName);
-                        map.addMarker(friend_marker);
-                        if (firstRenderOnMap) {
-                            map.moveCamera(CameraUpdateFactory.newLatLngZoom(friend_location,15));
-                            // Zoom in, animating the camera.
-                            map.animateCamera(CameraUpdateFactory.zoomIn());
-                            // Zoom out to zoom level 10, animating with a duration of 2 seconds.
-                            map.animateCamera(CameraUpdateFactory.zoomTo(15), 2000, null);
-                            firstRenderOnMap = false;
-                        }
                         if (latitude != 0 && longitude != 0 && stop_tracking == false) {
                             showLocation();
                         }
                     }
-
                 } catch (JSONException jsonExcep) {
                     System.out.println(jsonExcep);
                 } catch (UnsupportedEncodingException unsuppEncodingExcep) {
@@ -204,8 +195,30 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
         });
     }
 
+    public void addMapMarker(double latitude, double longitude) {
+        GoogleMap map = ((map) adapter.getRegisteredFragment(0)).map;
+
+        LatLng friend_location = new LatLng(latitude, longitude);
+        map.clear();
+        map.setMyLocationEnabled(true);
+
+        friend_marker.position(friend_location);
+        friend_marker.title(friendName);
+        map.addMarker(friend_marker);
+        if (firstRenderOnMap) {
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(friend_location, 15));
+            // Zoom in, animating the camera.
+            map.animateCamera(CameraUpdateFactory.zoomIn());
+            // Zoom out to zoom level 10, animating with a duration of 2 seconds.
+            map.animateCamera(CameraUpdateFactory.zoomTo(15), 2000, null);
+            firstRenderOnMap = false;
+        }
+    }
+
     public void stopTracking(MenuItem menu) {
         stop_tracking = true;
+        GoogleMap map = ((map) adapter.getRegisteredFragment(0)).map;
+        map.clear();
         Toast.makeText(getApplicationContext(), "Stopped tracking!", Toast.LENGTH_LONG).show();
     }
 
@@ -233,9 +246,9 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
         builder.setPositiveButton("Request", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                AsyncHttpClient client = new AsyncHttpClient();
                 int expiration = input_time.getValue();
                 client.get(MainActivity.baseURL + "/getPin/" + expiration, new AsyncHttpResponseHandler() {
+
                     @Override
                     public void onStart() {
                         // called before request is started
@@ -247,12 +260,9 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
                             JSONObject obj = new JSONObject(new String(response, "UTF-8"));
                             my_pin = obj.getInt("pin");
                             countDown = obj.getInt("countDown");
-                            System.out.println("Count down is " + countDown);
                             startSharingLocation();
                         } catch (UnsupportedEncodingException e) {
-                        }
-                        catch (JSONException e) {
-
+                        } catch (JSONException e) {
                         }
                     }
 
@@ -279,7 +289,7 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
     }
 
     public void startSharingLocation() {
-        TextView pin_view =(TextView) findViewById(R.id.textView3);
+        TextView pin_view = (TextView) findViewById(R.id.textView3);
         com.gc.materialdesign.views.ButtonRectangle generate_pin_button = (com.gc.materialdesign.views.ButtonRectangle) findViewById(R.id.generate_pin_button);
         TextView countDownTimer = (TextView) findViewById(R.id.countDownTimer);
         Button copyToClipboardButton = (Button) findViewById(R.id.copyToClipboardButton);
@@ -324,7 +334,7 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
     }
 
     public void sharePin(View v) {
-        String shareText = "My Hound Pin is: "+my_pin;
+        String shareText = "My Hound Pin is: " + my_pin;
         Intent sendIntent = new Intent();
         sendIntent.setAction(Intent.ACTION_SEND);
         sendIntent.putExtra(Intent.EXTRA_TEXT, shareText);
@@ -333,11 +343,11 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
     }
 
     public void copyPinToClipboard(View v) {
-        String shareText = "My Hound Pin is: "+my_pin;
+        String shareText = "My Hound Pin is: " + my_pin;
         ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
         ClipData clip = ClipData.newPlainText("Hound Pin", shareText);
         clipboard.setPrimaryClip(clip);
-        Toast.makeText(this,"Pin copied to clipboard!",Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Pin copied to clipboard!", Toast.LENGTH_SHORT).show();
     }
 
     public void destroyPin(View v) {
@@ -348,24 +358,33 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
     public void showTimer(int countDown) {
         timer = new CountDownTimer(countDown, 1000) {
             TextView countDownTimer = (TextView) findViewById(R.id.countDownTimer);
+
             public void onTick(long millisUntilFinished) {
-                if(locationSharingStarted == false) {
+                if (locationSharingStarted == false) {
                     cancelTimer();
                     countDownTimer.setText("");
                     return;
-                }else {
-                    long hours = millisUntilFinished / (60*60*1000);
-                    long minutes = (millisUntilFinished % (60*60*1000)) / (60*1000);
-                    long seconds = (millisUntilFinished % (60*1000) / 1000);
+                } else {
+                    long hours = millisUntilFinished / (60 * 60 * 1000);
+                    long minutes = (millisUntilFinished % (60 * 60 * 1000)) / (60 * 1000);
+                    long seconds = (millisUntilFinished % (60 * 1000) / 1000);
                     StringBuilder time = new StringBuilder();
-                    if(hours > 0) {
-                        time.append(hours+":");
+                    if (hours > 0) {
+                        time.append(hours + ":");
                     }
-                    time.append(minutes+":");
-                    time.append(seconds+" sec");
-                    countDownTimer.setText("Pin expires in: " + time);
+                    if (minutes > 9)
+                        time.append(minutes + ":");
+                    else
+                        time.append("0" + minutes + ":");
+
+                    if (seconds > 9)
+                        time.append(seconds);
+                    else
+                        time.append("0" + seconds);
+                    countDownTimer.setText("Pin expires in: " + time + " sec");
                 }
             }
+
             public void onFinish() {
                 countDownTimer.setText("Pin expired!");
             }
@@ -377,7 +396,7 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
     }
 
     public void showInvalidPinDialog() {
-        Toast.makeText(this,"Pin you entered is invalid or expired",Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Pin you entered is invalid or expired", Toast.LENGTH_SHORT).show();
     }
 
     public void sendPinExpiryMessage() {

@@ -5,92 +5,94 @@
     android:layout_height="match_parent">
 
     <TextView
+        android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Your Pin:"
-        android:id="@+id/textView2"
-        android:textSize="@dimen/abc_text_size_medium_material"
-        android:textAppearance="@android:style/TextAppearance"
-        android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
         android:layout_marginStart="29dp"
         android:layout_marginTop="50dp"
-        android:onClick="openGeneratePinDialog" />
+        android:onClick="openGeneratePinDialog"
+        android:text="Your Pin:"
+        android:textAppearance="@android:style/TextAppearance"
+        android:textSize="@dimen/abc_text_size_medium_material" />
 
     <TextView
+        android:id="@+id/textView3"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/textView3"
-        android:textSize="@dimen/abc_text_size_medium_material"
+        android:layout_alignTop="@+id/textView2"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="45dp"
+        android:layout_toEndOf="@+id/textView2"
+        android:onClick="openGeneratePinDialog"
         android:text="No pin generated :("
         android:textAppearance="@android:style/TextAppearance"
-        android:layout_marginRight="45dp"
-        android:textStyle="italic"
-        android:layout_alignTop="@+id/textView2"
-        android:layout_toEndOf="@+id/textView2"
-        android:layout_marginLeft="5dp"
-        android:onClick="openGeneratePinDialog" />
+        android:textSize="@dimen/abc_text_size_medium_material"
+        android:textStyle="italic" />
 
     <com.gc.materialdesign.views.ButtonRectangle
-        android:textColor="#EEEEEE"
+        android:id="@+id/generate_pin_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Generate Pin"
-        android:onClick="openGeneratePinDialog"
-        android:background="@color/ColorPrimary"
-        android:id="@+id/generate_pin_button"
-        android:visibility="visible"
-        android:layout_below="@+id/textView2"
+        android:layout_alignEnd="@+id/textView3"
         android:layout_alignStart="@+id/textView2"
+        android:layout_below="@+id/textView2"
         android:layout_marginTop="10dp"
-        android:layout_alignEnd="@+id/textView3" />
+        android:background="@color/ColorPrimary"
+        android:onClick="openGeneratePinDialog"
+        android:text="Generate Pin"
+        android:textColor="#EEEEEE"
+        android:visibility="visible"
+        materialdesign:animate="false" />
 
     <Button
+        android:id="@+id/share_pin_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Share"
-        android:onClick="sharePin"
-        android:id="@+id/share_pin_button"
-        android:visibility="invisible"
         android:layout_above="@+id/destroyPin"
         android:layout_alignStart="@+id/generate_pin_button"
-        android:layout_marginRight="10dp" />
+        android:layout_marginRight="10dp"
+        android:onClick="sharePin"
+        android:text="Share"
+        android:visibility="invisible" />
 
     <Button
+        android:id="@+id/copyToClipboardButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Copy to clipboard"
-        android:onClick="copyPinToClipboard"
-        android:id="@+id/copyToClipboardButton"
-        android:visibility="invisible"
         android:layout_above="@+id/destroyPin"
         android:layout_alignEnd="@+id/generate_pin_button"
-        android:layout_toEndOf="@+id/share_pin_button" />
+        android:layout_toEndOf="@+id/share_pin_button"
+        android:onClick="copyPinToClipboard"
+        android:text="Copy to clipboard"
+        android:visibility="invisible" />
 
     <com.gc.materialdesign.views.ButtonRectangle
+        android:id="@+id/destroyPin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Destroy Pin"
+        android:layout_alignEnd="@+id/generate_pin_button"
+        android:layout_alignStart="@+id/generate_pin_button"
+        android:layout_below="@+id/generate_pin_button"
+        android:layout_marginTop="28dp"
         android:background="@color/RedColorPrimary"
-        android:id="@+id/destroyPin"
+        android:elevation="10dp"
         android:onClick="destroyPin"
+        android:text="Destroy Pin"
         android:textColor="#EEEEEE"
         android:visibility="invisible"
-        android:elevation="10dp"
-        android:layout_marginTop="28dp"
-        android:layout_below="@+id/generate_pin_button"
-        android:layout_alignStart="@+id/generate_pin_button"
-        android:layout_alignEnd="@+id/generate_pin_button" />
+        materialdesign:animate="false" />
 
     <TextView
+        android:id="@+id/countDownTimer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/countDownTimer"
-        android:textStyle="bold"
-        android:textSize="@dimen/abc_text_size_headline_material"
-        android:visibility="invisible"
-        android:paddingTop="260dp"
+        android:layout_alignParentLeft="true"
         android:paddingLeft="35dp"
-        android:layout_alignParentLeft="true" />
+        android:paddingTop="260dp"
+        android:textSize="@dimen/abc_text_size_headline_material"
+        android:textStyle="bold"
+        android:visibility="invisible" />
 
 </RelativeLayout>
