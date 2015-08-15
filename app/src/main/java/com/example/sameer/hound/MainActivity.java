@@ -1,8 +1,7 @@
 package com.example.sameer.hound;
 
+import com.google.android.gms.maps.model.Marker;
 import com.loopj.android.http.*;
-
-
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Intent;
@@ -12,7 +11,6 @@ import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AlertDialog;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,23 +18,19 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.text.InputType;
 import android.content.DialogInterface;
-
 import org.apache.http.Header;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-
 import java.io.UnsupportedEncodingException;
 
 
@@ -56,7 +50,7 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
     SlidingTabLayout tabs;
     CharSequence Titles[] = {"Friends", "You"};
     int Numboftabs = 2;
-
+    MarkerOptions friend_marker = new MarkerOptions();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -87,7 +81,6 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // getSupportActionBar().show();
         getMenuInflater().inflate(R.menu.menu, menu);
         return true;
     }
@@ -128,10 +121,10 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
         builder.setPositiveButton("Add", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                firstRenderOnMap = true;
                 tracking_pin = (Integer.parseInt(input_pin.getText().toString()));
                 friendName = input_friend_name.getText().toString();
                 dialog.cancel();
-                firstRenderOnMap = true;
                 if (tracking_pin != 0) {
                     showLocation();
                 }
@@ -173,10 +166,18 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
                         GoogleMap map = ((map) adapter.getRegisteredFragment(0)).map;
 
                         LatLng friend_location = new LatLng(latitude, longitude);
-                        map.addMarker(new MarkerOptions().position(friend_location).title(friendName));
+                        map.clear();
+                        map.setMyLocationEnabled(true);
+
+                        friend_marker.position(friend_location);
+                        friend_marker.title(friendName);
+                        map.addMarker(friend_marker);
                         if (firstRenderOnMap) {
-                            map.moveCamera(CameraUpdateFactory.newLatLng(friend_location));
-                            map.animateCamera(CameraUpdateFactory.zoomTo(17.0f));
+                            map.moveCamera(CameraUpdateFactory.newLatLngZoom(friend_location,15));
+                            // Zoom in, animating the camera.
+                            map.animateCamera(CameraUpdateFactory.zoomIn());
+                            // Zoom out to zoom level 10, animating with a duration of 2 seconds.
+                            map.animateCamera(CameraUpdateFactory.zoomTo(15), 2000, null);
                             firstRenderOnMap = false;
                         }
                         if (latitude != 0 && longitude != 0 && stop_tracking == false) {
@@ -279,11 +280,11 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
 
     public void startSharingLocation() {
         TextView pin_view =(TextView) findViewById(R.id.textView3);
-        Button generate_pin_button = (Button) findViewById(R.id.generate_pin_button);
+        com.gc.materialdesign.views.ButtonRectangle generate_pin_button = (com.gc.materialdesign.views.ButtonRectangle) findViewById(R.id.generate_pin_button);
         TextView countDownTimer = (TextView) findViewById(R.id.countDownTimer);
         Button copyToClipboardButton = (Button) findViewById(R.id.copyToClipboardButton);
         Button share_pin_button = (Button) findViewById(R.id.share_pin_button);
-        Button destroyPinButton = (Button) findViewById(R.id.destroyPin);
+        com.gc.materialdesign.views.ButtonRectangle destroyPinButton = (com.gc.materialdesign.views.ButtonRectangle) findViewById(R.id.destroyPin);
 
         generate_pin_button.setVisibility(View.INVISIBLE);
         countDownTimer.setVisibility(View.VISIBLE);
@@ -302,10 +303,10 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
 
     public void stopSharingLocation() {
         cancelTimer();
-        Button generatePinButton = (Button) findViewById(R.id.generate_pin_button);
+        com.gc.materialdesign.views.ButtonRectangle generatePinButton = (com.gc.materialdesign.views.ButtonRectangle) findViewById(R.id.generate_pin_button);
         Button sharePinButton = (Button) findViewById(R.id.share_pin_button);
         Button copyToClipboard = (Button) findViewById(R.id.copyToClipboardButton);
-        Button destroyPin = (Button) findViewById(R.id.destroyPin);
+        com.gc.materialdesign.views.ButtonRectangle destroyPin = (com.gc.materialdesign.views.ButtonRectangle) findViewById(R.id.destroyPin);
         TextView countDownTimer = (TextView) findViewById(R.id.countDownTimer);
         TextView showPin = (TextView) findViewById(R.id.textView3);
 
