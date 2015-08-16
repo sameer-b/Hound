@@ -43,7 +43,7 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
     final static String baseURL = "https://hound-trackerweb.rhcloud.com";
 
     int myPin = 0;
-    int tracking_pin = 0;
+    int trackingPin = 0;
     int countDown = 0;
     String friendName = null;
 
@@ -98,11 +98,11 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
         if (!rawStopTracking.equals("")) {
             stopTracking = Boolean.parseBoolean(rawStopTracking);
             if (!stopTracking) {
-                String raw_tracking_pin = getSetting("tracking_pin");
+                String rawTrackingPin = getSetting("trackingPin");
                 friendName = getSetting("friendName");
-                if (!raw_tracking_pin.equals("")) {
-                    tracking_pin = Integer.parseInt(raw_tracking_pin);
-                    if (tracking_pin != 0) {
+                if (!rawTrackingPin.equals("")) {
+                    trackingPin = Integer.parseInt(rawTrackingPin);
+                    if (trackingPin != 0) {
                         showLocation();
                     }
                 }
@@ -203,16 +203,16 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 firstRenderOnMap = true;
-                tracking_pin = (Integer.parseInt(input_pin.getText().toString()));
+                trackingPin = (Integer.parseInt(input_pin.getText().toString()));
                 friendName = input_friend_name.getText().toString();
                 stopTracking = false;
 
-                saveSetting("tracking_pin", tracking_pin + "");
+                saveSetting("trackingPin", trackingPin + "");
                 saveSetting("friendName", friendName);
                 saveSetting("stopTracking", "false");
 
                 dialog.cancel();
-                if (tracking_pin != 0) {
+                if (trackingPin != 0) {
                     showLocation();
                 }
             }
@@ -231,7 +231,7 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
     }
 
     public void showLocation() {
-        client.get(MainActivity.baseURL + "/getLocation/" + tracking_pin, new AsyncHttpResponseHandler() {
+        client.get(MainActivity.baseURL + "/getLocation/" + trackingPin, new AsyncHttpResponseHandler() {
 
             @Override
             public void onStart() {
@@ -299,7 +299,7 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
         saveSetting("stopTracking", "true");
         GoogleMap map = ((map) adapter.getRegisteredFragment(0)).map;
         saveSetting("friendName", "");
-        saveSetting("tracking_pin", "");
+        saveSetting("trackingPin", "");
         map.clear();
         Toast.makeText(getApplicationContext(), "Stopped tracking!", Toast.LENGTH_LONG).show();
     }
