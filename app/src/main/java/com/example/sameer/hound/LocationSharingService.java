@@ -31,9 +31,12 @@ public class LocationSharingService extends Service {
 
     @Override
     public void onStart(Intent intent, int startId) {
-        int my_pin = Integer.parseInt(intent.getExtras().getString("pin"));
+        int myPin = 0;
+        if (intent != null) {
+            myPin = Integer.parseInt(intent.getExtras().getString("pin"));
+        }
         locationManager = (LocationManager) getSystemService(this.LOCATION_SERVICE);
-        listener = new MyLocationListener(my_pin);
+        listener = new MyLocationListener(myPin);
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 4000, 0, listener);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 4000, 0, listener);
     }
@@ -115,10 +118,10 @@ public class LocationSharingService extends Service {
     }
 
     public class MyLocationListener implements LocationListener {
-        int my_pin;
+        int myPin;
 
-        public MyLocationListener(int my_pin) {
-            this.my_pin = my_pin;
+        public MyLocationListener(int myPin) {
+            this.myPin = myPin;
         }
 
         public void onLocationChanged(final Location loc) {
@@ -130,7 +133,7 @@ public class LocationSharingService extends Service {
                 intent.putExtra("Provider", loc.getProvider());
                 sendBroadcast(intent);
                 RequestParams params = new RequestParams();
-                params.put("pin", my_pin);
+                params.put("pin", myPin);
                 params.put("longitude", loc.getLongitude());
                 params.put("latitude",loc.getLatitude());
                 AsyncHttpClient client = new AsyncHttpClient();
@@ -171,6 +174,5 @@ public class LocationSharingService extends Service {
         public void onStatusChanged(String provider, int status, Bundle extras) {
 
         }
-
     }
 }

@@ -4,7 +4,9 @@ import com.loopj.android.http.*;
 
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.CountDownTimer;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBarActivity;
@@ -40,12 +42,12 @@ import java.io.UnsupportedEncodingException;
 public class MainActivity extends ActionBarActivity implements OnMapReadyCallback {
     final static String baseURL = "https://hound-trackerweb.rhcloud.com";
 
-    int my_pin = 0;
+    int myPin = 0;
     int tracking_pin = 0;
     int countDown = 0;
     String friendName = null;
 
-    Boolean stop_tracking = false;
+    Boolean stopTracking = false;
     Boolean locationSharingStarted = false;
     Boolean firstRenderOnMap = true;
     int Numboftabs = 2;
@@ -85,6 +87,77 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
 
         // Setting the ViewPager For the SlidingTabsLayout
         tabs.setViewPager(pager);
+
+        resumeTracking();
+        resumeSharing();
+
+    }
+
+    public void resumeTracking() {
+        String rawStopTracking = getSetting("stopTracking");
+        if (!rawStopTracking.equals("")) {
+            stopTracking = Boolean.parseBoolean(rawStopTracking);
+            if (!stopTracking) {
+                String raw_tracking_pin = getSetting("tracking_pin");
+                friendName = getSetting("friendName");
+                if (!raw_tracking_pin.equals("")) {
+                    tracking_pin = Integer.parseInt(raw_tracking_pin);
+                    if (tracking_pin != 0) {
+                        showLocation();
+                    }
+                }
+            }
+        }
+
+    }
+
+    public void resumeSharing() {
+        String raw_locationSharingStarted = getSetting("locationSharingStarted");
+        if (!raw_locationSharingStarted.equals("")) {
+            locationSharingStarted = Boolean.parseBoolean(raw_locationSharingStarted);
+            if (locationSharingStarted) {
+                String rawMyPin = getSetting("myPin");
+                if (!rawMyPin.equals("")) {
+                    myPin = Integer.parseInt(rawMyPin);
+                    getCountDown();
+
+                }
+            }
+        }
+    }
+
+    public void getCountDown() {
+        client.get(baseURL + "/getCountDown/" + myPin, new AsyncHttpResponseHandler() {
+
+            @Override
+            public void onStart() {
+                // called before request is started
+            }
+
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] response) {
+                // called when response HTTP status is "200 OK"
+                try {
+                    JSONObject obj = new JSONObject(new String(response, "UTF-8"));
+                    countDown = obj.getInt("countDown");
+                    startSharingLocation();
+                } catch (UnsupportedEncodingException e) {
+
+                } catch (JSONException e) {
+
+                }
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] errorResponse, Throwable e) {
+                // called when response HTTP status is "4XX" (eg. 401, 403, 404)
+            }
+
+            @Override
+            public void onRetry(int retryNo) {
+                // called when request is retried
+            }
+        });
     }
 
     @Override
@@ -132,6 +205,12 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
                 firstRenderOnMap = true;
                 tracking_pin = (Integer.parseInt(input_pin.getText().toString()));
                 friendName = input_friend_name.getText().toString();
+                stopTracking = false;
+
+                saveSetting("tracking_pin", tracking_pin + "");
+                saveSetting("friendName", friendName);
+                saveSetting("stopTracking", "false");
+
                 dialog.cancel();
                 if (tracking_pin != 0) {
                     showLocation();
@@ -172,7 +251,7 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
                         double longitude = obj.getDouble("longitude");
                         addMapMarker(latitude, longitude);
 
-                        if (latitude != 0 && longitude != 0 && stop_tracking == false) {
+                        if (latitude != 0 && longitude != 0 && stopTracking == false) {
                             showLocation();
                         }
                     }
@@ -216,8 +295,11 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
     }
 
     public void stopTracking(MenuItem menu) {
-        stop_tracking = true;
+        stopTracking = true;
+        saveSetting("stopTracking", "true");
         GoogleMap map = ((map) adapter.getRegisteredFragment(0)).map;
+        saveSetting("friendName", "");
+        saveSetting("tracking_pin", "");
         map.clear();
         Toast.makeText(getApplicationContext(), "Stopped tracking!", Toast.LENGTH_LONG).show();
     }
@@ -258,7 +340,8 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
                     public void onSuccess(int statusCode, Header[] headers, byte[] response) {
                         try {
                             JSONObject obj = new JSONObject(new String(response, "UTF-8"));
-                            my_pin = obj.getInt("pin");
+                            myPin = obj.getInt("pin");
+                            saveSetting("myPin", myPin + "");
                             countDown = obj.getInt("countDown");
                             startSharingLocation();
                         } catch (UnsupportedEncodingException e) {
@@ -301,12 +384,14 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
         share_pin_button.setVisibility(View.VISIBLE);
         copyToClipboardButton.setVisibility(View.VISIBLE);
         destroyPinButton.setVisibility(View.VISIBLE);
-        pin_view.setText(" " + my_pin);
+        pin_view.setText(" " + myPin);
         showTimer(countDown);
-        Toast.makeText(getApplicationContext(), "Your Pin: " + my_pin, Toast.LENGTH_LONG).show();
+        Toast.makeText(getApplicationContext(), "Your Pin: " + myPin, Toast.LENGTH_LONG).show();
+
         locationSharingStarted = true;
+        saveSetting("locationSharingStarted", "true");
         Intent intent = new Intent(this, LocationSharingService.class);
-        intent.putExtra("pin", my_pin + "");
+        intent.putExtra("pin", myPin + "");
         startService(intent);
 
     }
@@ -328,13 +413,14 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
         destroyPin.setVisibility(View.INVISIBLE);
 
         locationSharingStarted = false;
+        saveSetting("locationSharingStarted", "false");
         Intent intent = new Intent(this, LocationSharingService.class);
         stopService(intent);
         Toast.makeText(getApplicationContext(), "Location sharing stopped!", Toast.LENGTH_LONG).show();
     }
 
     public void sharePin(View v) {
-        String shareText = "My Hound Pin is: " + my_pin;
+        String shareText = "My Hound Pin is: " + myPin;
         Intent sendIntent = new Intent();
         sendIntent.setAction(Intent.ACTION_SEND);
         sendIntent.putExtra(Intent.EXTRA_TEXT, shareText);
@@ -343,7 +429,7 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
     }
 
     public void copyPinToClipboard(View v) {
-        String shareText = "My Hound Pin is: " + my_pin;
+        String shareText = "My Hound Pin is: " + myPin;
         ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
         ClipData clip = ClipData.newPlainText("Hound Pin", shareText);
         clipboard.setPrimaryClip(clip);
@@ -386,6 +472,10 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
             }
 
             public void onFinish() {
+                locationSharingStarted = false;
+                saveSetting("locationSharingStarted", "false");
+                myPin = 0;
+                saveSetting("myPin", myPin + "");
                 countDownTimer.setText("Pin expired!");
             }
         }.start();
@@ -401,14 +491,15 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
 
     public void sendPinExpiryMessage() {
         AsyncHttpClient client = new AsyncHttpClient();
-        client.get(MainActivity.baseURL + "/destroyPin/" + my_pin, new AsyncHttpResponseHandler() {
+        client.get(MainActivity.baseURL + "/destroyPin/" + myPin, new AsyncHttpResponseHandler() {
             @Override
             public void onStart() {
             }
 
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] response) {
-                my_pin = 0;
+                myPin = 0;
+                saveSetting("myPin", myPin + "");
             }
 
             @Override
@@ -421,5 +512,17 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
 
             }
         });
+    }
+
+    public void saveSetting(String setting_name, String setting_value) {
+        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString(setting_name, setting_value);
+        editor.commit();
+    }
+
+    public String getSetting(String setting_name) {
+        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+        return sharedPref.getString(setting_name, "");
     }
 }
