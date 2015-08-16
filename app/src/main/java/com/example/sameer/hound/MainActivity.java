@@ -53,7 +53,7 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
     int Numboftabs = 2;
 
     CountDownTimer timer;
-    private Toolbar toolbar;
+    Toolbar toolbar;
     ViewPager pager;
     ViewPagerAdapter adapter;
     SlidingTabLayout tabs;
