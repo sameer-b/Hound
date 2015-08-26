@@ -17,4 +17,12 @@
         android:title="@string/add_tracking"
         android:onClick="showAddTrackingDialog"
         app:showAsAction="always"/>
+
+    <item
+        android:id = "@+id/about_page"
+        android:icon="@drawable/ic_info_white_24dp"
+        android:orderInCategory="102"
+        android:title="About"
+        android:onClick="showAboutDialog"
+        app:showAsAction="never"/>
 </menu>

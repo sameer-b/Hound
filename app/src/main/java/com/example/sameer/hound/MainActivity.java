@@ -477,6 +477,7 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
                 myPin = 0;
                 saveSetting("myPin", myPin + "");
                 countDownTimer.setText("Pin expired!");
+                stopSharingLocation();
             }
         }.start();
     }
@@ -524,5 +525,33 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
     public String getSetting(String setting_name) {
         SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
         return sharedPref.getString(setting_name, "");
+    }
+
+    public void showAboutDialog(MenuItem menu) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("About");
+
+        final LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        // Set up the input
+        TextView website = new TextView(this);
+        TextView contact = new TextView(this);
+        website.setPadding(50,0,0,0);
+        contact.setPadding(50,0,0,0);
+        website.setText("Website: houndApp.xyz");
+        contact.setText("Contact: contact@houndApp.xyz ");
+
+        layout.addView(website);
+        layout.addView(contact);
+
+        builder.setView(layout);
+
+        builder.setNegativeButton("Ok", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        builder.show();
     }
 }
