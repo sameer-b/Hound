@@ -11,3 +11,6 @@ Hound is an app that lets you share your location in real time with your friends
 Download zip and import it in Android Studio.  
 Add your Google Maps API Key to AndroidManifest.  
 Build!
+
+## Website:
+www.houndApp.xyz
